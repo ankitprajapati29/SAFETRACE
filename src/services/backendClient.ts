@@ -1,7 +1,11 @@
+
 import type { BackendAnalysisResponse } from "../types";
 
 const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"
+  import.meta.env.VITE_BACKEND_URL ||
+  (import.meta.env.DEV
+    ? "http://localhost:8000"
+    : "https://safetrace-backend-ygfi.onrender.com")
 ).replace(/\/+$/, "");
 
 const REQUEST_TIMEOUT = 30_000;
@@ -16,6 +20,7 @@ export async function analyzeWithBackend(
   }
 
   const controller = new AbortController();
+
   const timeoutId = window.setTimeout(
     () => controller.abort(),
     REQUEST_TIMEOUT,
@@ -33,7 +38,9 @@ export async function analyzeWithBackend(
     });
 
     if (!response.ok) {
-      throw new Error(`Backend request failed (${response.status}).`);
+      throw new Error(
+        `Backend request failed (${response.status}).`,
+      );
     }
 
     const data: unknown = await response.json();
