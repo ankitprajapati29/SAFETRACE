@@ -1,3 +1,4 @@
+
 import { analyzeMessage } from "../services/detector/ruleEngine";
 
 type Language = "en" | "hi";
@@ -225,17 +226,19 @@ function ResultCard({
         </section>
       )}
 
-      {/* AI EXPLANATION */}
+      {/* BACKEND ANALYSIS */}
 
       {aiAnalysis.trim() && (
         <section className="result-ai-block">
           <div className="result-block-heading">
-            <span className="result-step">AI</span>
+            <span className="result-step">03</span>
 
             <div>
-              <span className="section-kicker">ADDITIONAL ANALYSIS</span>
+              <span className="section-kicker">BACKEND ANALYSIS</span>
               <h3>
-                {isHindi ? "AI की व्याख्या" : "AI explanation"}
+                {isHindi
+                  ? "अतिरिक्त विश्लेषण"
+                  : "Additional analysis"}
               </h3>
             </div>
           </div>
@@ -249,7 +252,7 @@ function ResultCard({
       <section className="result-section-block result-actions-block">
         <div className="result-block-heading">
           <span className="result-step">
-            {result.detectedUrls.length > 0 ? "03" : "02"}
+            {result.detectedUrls.length > 0 ? "04" : "03"}
           </span>
 
           <div>
@@ -272,7 +275,7 @@ function ResultCard({
         </ol>
       </section>
 
-      {/* OPTIONAL TECHNICAL DETAILS */}
+      {/* TECHNICAL DETAILS */}
 
       <details className="result-technical-details">
         <summary>
@@ -288,6 +291,11 @@ function ResultCard({
           </div>
 
           <div>
+            <span>Backend engine</span>
+            <strong>SAFETRACE Rule Engine</strong>
+          </div>
+
+          <div>
             <span>URLs detected</span>
             <strong>{result.detectedUrls.length}</strong>
           </div>
@@ -296,13 +304,6 @@ function ResultCard({
             <span>Suspicious URLs</span>
             <strong>{suspiciousCount}</strong>
           </div>
-
-          <div>
-            <span>AI assistance</span>
-            <strong>
-              {aiAnalysis.trim() ? "Available" : "Unavailable"}
-            </strong>
-          </div>
         </div>
       </details>
 
@@ -310,8 +311,8 @@ function ResultCard({
 
       <p className="result-disclaimer">
         {isHindi
-          ? "यह स्कोर स्थानीय नियम-आधारित जाँच से बनाया गया है। AI विश्लेषण अतिरिक्त मार्गदर्शन देता है। कम स्कोर सुरक्षा की गारंटी नहीं है।"
-          : "This score is based on local rule-based checks. AI analysis provides additional guidance. A low score does not guarantee safety."}
+          ? "यह स्कोर नियम-आधारित जाँच से बनाया गया है। यह सुरक्षा की गारंटी नहीं है। कम स्कोर का अर्थ यह नहीं कि मैसेज पूरी तरह सुरक्षित है।"
+          : "This assessment uses rule-based detection. It is not a guarantee of security. A low score does not mean the message is completely safe."}
       </p>
 
       {/* AUDIO ACTIONS */}
