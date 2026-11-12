@@ -165,9 +165,11 @@ function App() {
   const [language, setLanguage] = useState<Language>("en");
   const [message, setMessage] = useState("");
   const [ocrText, setOcrText] = useState("");
+
   const [result, setResult] = useState<
     ReturnType<typeof runDetection> | null
   >(null);
+
   const [error, setError] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState("");
@@ -214,6 +216,11 @@ function App() {
     } catch (err) {
       console.error("Backend analysis failed:", err);
 
+      setAiAnalysis(
+        isHindi
+          ? "बैकएंड विश्लेषण उपलब्ध नहीं है। स्थानीय विश्लेषण दिखाया जा रहा है।"
+          : "Backend analysis is unavailable. Showing local analysis results.",
+      );
     } finally {
       setIsAnalyzing(false);
     }
@@ -268,8 +275,8 @@ function App() {
     const actions = recommendations.join(". ");
 
     const resultText = isHindi
-      ? `जाँच का परिणाम: ${result.level}। रिस्क स्कोर 100 में से ${result.score}। चेतावनी संकेत: ${reasons}। AI विश्लेषण: ${aiAnalysis}। सुझाव: ${actions}`
-      : `Analysis result: ${result.level}. Risk score ${result.score} out of 100. Warning signs: ${reasons}. AI analysis: ${aiAnalysis}. Recommended actions: ${actions}`;
+      ? `जाँच का परिणाम: ${result.level}। रिस्क स्कोर 100 में से ${result.score}। चेतावनी संकेत: ${reasons}। विश्लेषण: ${aiAnalysis}। सुझाव: ${actions}`
+      : `Analysis result: ${result.level}. Risk score ${result.score} out of 100. Warning signs: ${reasons}. Backend analysis: ${aiAnalysis}. Recommended actions: ${actions}`;
 
     const started = speakText(resultText, language);
 
@@ -301,7 +308,9 @@ function App() {
           </span>
 
           <span className="brand-copy">
-            <strong>SAFE<span>TRACE</span></strong>
+            <strong>
+              SAFE<span>TRACE</span>
+            </strong>
             <small>Digital Threat Intelligence</small>
           </span>
         </a>
@@ -375,11 +384,14 @@ function App() {
 
             <div className="hero-trust-line">
               <Icon name="shield" size={16} />
-              <span>Local detection + AI-assisted analysis</span>
+              <span>Local + Backend Rule-Based Detection</span>
             </div>
           </div>
 
-          <div className="hero-visual" aria-label="Threat intelligence visualization">
+          <div
+            className="hero-visual"
+            aria-label="Threat intelligence visualization"
+          >
             <div className="visual-orbit orbit-one" />
             <div className="visual-orbit orbit-two" />
             <div className="visual-orbit orbit-three" />
@@ -404,7 +416,7 @@ function App() {
 
             <div className="visual-node node-three">
               <Icon name="spark" size={18} />
-              <span>AI ANALYSIS</span>
+              <span>RISK SCORING</span>
             </div>
 
             <div className="visual-caption">
@@ -456,7 +468,7 @@ function App() {
           </div>
         </section>
 
-        {/* 01 — THREAT ANALYZER */}
+        {/* THREAT ANALYZER */}
 
         <section className="analyzer-section" id="analyzer">
           <div className="section-heading">
@@ -474,7 +486,7 @@ function App() {
 
             <div className="analysis-mode">
               <span className="status-dot" />
-              LOCAL + AI ANALYSIS
+              LOCAL + BACKEND ANALYSIS
             </div>
           </div>
 
@@ -485,7 +497,9 @@ function App() {
             </div>
 
             <label htmlFor="message-input">
-              {isHindi ? "संदिग्ध मैसेज या लिंक" : "Message / URL / Email"}
+              {isHindi
+                ? "संदिग्ध मैसेज या लिंक"
+                : "Message / URL / Email"}
             </label>
 
             <div className="message-composer">
@@ -572,8 +586,9 @@ function App() {
             <div className="privacy-note">
               <Icon name="shield" size={15} />
               <span>
-                Your message is sent to the configured backend for AI analysis.
-                Avoid submitting sensitive personal or banking information.
+                Your message is processed by local detection and the SAFETRACE
+                backend. Avoid submitting sensitive personal or banking
+                information.
               </span>
             </div>
           </div>
@@ -595,12 +610,12 @@ function App() {
             <div className="scanning-stages">
               <span>Input processing</span>
               <span>Pattern detection</span>
-              <span>AI analysis</span>
+              <span>Risk scoring</span>
             </div>
           </section>
         )}
 
-        {/* 02 — REDESIGNED ANALYSIS REPORT */}
+        {/* ANALYSIS REPORT */}
 
         {result && (
           <ResultCard
@@ -614,7 +629,7 @@ function App() {
           />
         )}
 
-        {/* 04 — DIGITAL SAFETY */}
+        {/* DIGITAL SAFETY */}
 
         <section className="safety-section" id="safety">
           <div className="section-heading">
