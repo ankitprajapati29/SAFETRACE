@@ -151,11 +151,6 @@ Organized on Unstop | DotRepo
 
 SAFETRACE is being developed in the context of practical cybersecurity challenges, focusing on making suspicious digital communication easier to examine and understand.
 
-## 🌐 Live Deployment
-
-- **Frontend:** https://safetrace-frontend.onrender.com
-- **Backend:** https://safetrace-backend-ygfi.onrender.com
-- **API Documentation:** https://safetrace-backend-ygfi.onrender.com/docs
 
 ## 🔮 Future Enhancements
 
