@@ -2257,3 +2257,142 @@ textarea:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* =========================================================
+   HOW TO USE SECTION
+========================================================= */
+
+.how-to-use-section {
+  padding-top: 125px;
+}
+
+.how-to-use-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.how-to-use-card {
+  position: relative;
+  min-height: 260px;
+  padding: 26px;
+  overflow: hidden;
+  background: rgba(255, 254, 250, .96);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  transition:
+    border-color .35s ease,
+    box-shadow .35s ease;
+}
+
+.how-to-use-card:hover {
+  border-color: rgba(36, 76, 56, .3);
+  box-shadow: 0 18px 38px rgba(30, 45, 32, .07);
+}
+
+.how-step-number {
+  position: absolute;
+  top: 23px;
+  right: 24px;
+  color: rgba(36, 76, 56, .22);
+  font-family: "Manrope", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.how-step-icon {
+  width: 49px;
+  height: 49px;
+  margin-bottom: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--forest);
+  background: #edf1e2;
+  border-radius: 14px;
+  transition:
+    transform .35s var(--ease),
+    background .3s ease;
+}
+
+.how-to-use-card:hover .how-step-icon {
+  transform: translateY(-4px) rotate(-5deg);
+  background: var(--lime);
+}
+
+.how-to-use-card h3 {
+  margin: 0 0 12px;
+  font-family: "Manrope", sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+}
+
+.how-to-use-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.85;
+}
+
+.how-to-use-note {
+  margin-top: 22px;
+  padding: 17px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #edf1e7;
+  border: 1px solid rgba(36, 76, 56, .1);
+  border-radius: 13px;
+}
+
+.how-to-use-note svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--forest);
+}
+
+.how-to-use-note p {
+  margin: 0;
+  color: #626d5e;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .how-to-use-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .how-to-use-section {
+    padding-top: 85px;
+  }
+
+  .how-to-use-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .how-to-use-card {
+    min-height: 210px;
+    padding: 23px;
+  }
+
+  .how-to-use-card h3 {
+    font-size: 16px;
+  }
+
+  .how-to-use-note {
+    padding: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .how-to-use-card,
+  .how-step-icon {
+    transition: none;
+  }
+}

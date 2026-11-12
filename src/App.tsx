@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -290,6 +291,7 @@ function App() {
         <nav className="desktop-nav" aria-label="Main navigation">
           <a href="#analyzer">Analyzer</a>
           <a href="#intelligence">Intelligence</a>
+          <a href="#how-to-use">How to Use</a>
           <a href="#safety">Safety Guide</a>
         </nav>
 
@@ -449,6 +451,105 @@ function App() {
             </div>
           </div>
         </section>
+
+        {/* HOW TO USE */}
+
+        <motion.section
+          className="how-to-use-section"
+          id="how-to-use"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="section-heading">
+            <div>
+              <span className="section-kicker">
+                HOW IT WORKS / 4 SIMPLE STEPS
+              </span>
+              <h2>Security starts with a simple check.</h2>
+              <p>
+                Follow four simple steps to investigate suspicious
+                messages, links and digital content.
+              </p>
+            </div>
+          </div>
+
+          <div className="how-to-use-grid">
+            <motion.article
+              className="how-to-use-card"
+              whileHover={{ y: -7 }}
+              transition={{ duration: 0.25 }}
+            >
+              <span className="how-step-number">01</span>
+              <div className="how-step-icon">
+                <Icon name="scan" size={23} />
+              </div>
+              <h3>Choose Your Input</h3>
+              <p>
+                Start with a suspicious SMS, WhatsApp message,
+                email, URL or digital document.
+              </p>
+            </motion.article>
+
+            <motion.article
+              className="how-to-use-card"
+              whileHover={{ y: -7 }}
+              transition={{ duration: 0.25 }}
+            >
+              <span className="how-step-number">02</span>
+              <div className="how-step-icon">
+                <Icon name="file" size={23} />
+              </div>
+              <h3>Provide the Content</h3>
+              <p>
+                Paste your message, upload a screenshot for text
+                extraction or use voice input.
+              </p>
+            </motion.article>
+
+            <motion.article
+              className="how-to-use-card"
+              whileHover={{ y: -7 }}
+              transition={{ duration: 0.25 }}
+            >
+              <span className="how-step-number">03</span>
+              <div className="how-step-icon">
+                <Icon name="spark" size={23} />
+              </div>
+              <h3>Analyze Threat Signals</h3>
+              <p>
+                Click Analyze Threat to run local detection rules
+                and request backend analysis.
+              </p>
+            </motion.article>
+
+            <motion.article
+              className="how-to-use-card"
+              whileHover={{ y: -7 }}
+              transition={{ duration: 0.25 }}
+            >
+              <span className="how-step-number">04</span>
+              <div className="how-step-icon">
+                <Icon name="shield" size={23} />
+              </div>
+              <h3>Review the Results</h3>
+              <p>
+                Understand the risk score, detected warning signs
+                and recommended safety actions.
+              </p>
+            </motion.article>
+          </div>
+
+          <div className="how-to-use-note">
+            <Icon name="shield" size={17} />
+            <p>
+              <strong>Stay alert:</strong> A low risk score does not
+              guarantee that a message or link is safe. Always verify
+              important information independently.
+            </p>
+          </div>
+        </motion.section>
 
         {/* THREAT ANALYZER */}
 
