@@ -214,11 +214,6 @@ function App() {
     } catch (err) {
       console.error("Backend analysis failed:", err);
 
-      setError(
-        isHindi
-          ? "स्थानीय जाँच पूरी हुई, लेकिन AI सर्वर से जवाब नहीं मिला।"
-          : "Local analysis completed, but the AI service is unavailable. Check your backend configuration.",
-      );
     } finally {
       setIsAnalyzing(false);
     }

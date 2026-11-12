@@ -4,16 +4,21 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.analyze import router as analyze_router
 
+
 app = FastAPI(
-    title="SurakshaCheck API",
-    description="Privacy-focused digital scam detection backend",
+    title="SAFETRACE API",
+    description=(
+        "AI-powered cross-channel cyber fraud detection "
+        "and digital threat intelligence platform."
+    ),
     version="1.0.0",
 )
 
+
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://surakshacheck-frontend.onrender.com",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:4173",
@@ -24,20 +29,26 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 
+
+# API Routes
 app.include_router(analyze_router)
 
 
 @app.get("/")
-def home():
+async def home():
     return {
-        "app": "SurakshaCheck API",
+        "app": "SAFETRACE API",
+        "description": "Cross-Channel Cyber Fraud Intelligence Platform",
+        "version": "1.0.0",
         "status": "running",
     }
 
 
 @app.get("/api/health")
-def health_check():
+async def health_check():
     return {
+        "success": True,
+        "app": "SAFETRACE",
         "status": "healthy",
-        "message": "SurakshaCheck backend is ready",
+        "message": "SAFETRACE backend is running successfully.",
     }
