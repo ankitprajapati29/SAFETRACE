@@ -1,5 +1,15 @@
-
 import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  ShieldCheck,
+  ScanLine,
+  ArrowRight,
+  Link2,
+  FileText,
+  AudioLines,
+  Sparkles,
+} from "lucide-react";
+
 import "./App.css";
 
 import { analyzeMessage as runDetection } from "./services/detector/ruleEngine";
@@ -14,84 +24,41 @@ import {
 
 type Language = "en" | "hi";
 
+type IconName =
+  | "shield"
+  | "scan"
+  | "arrow"
+  | "link"
+  | "file"
+  | "audio"
+  | "spark";
+
 function Icon({
   name,
   size = 20,
 }: {
-  name: string;
+  name: IconName;
   size?: number;
 }) {
-  const common = {
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.7,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    "aria-hidden": true as const,
+  const icons = {
+    shield: ShieldCheck,
+    scan: ScanLine,
+    arrow: ArrowRight,
+    link: Link2,
+    file: FileText,
+    audio: AudioLines,
+    spark: Sparkles,
   };
 
-  switch (name) {
-    case "shield":
-      return (
-        <svg {...common}>
-          <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
-          <path d="m9 12 2 2 4-4" />
-        </svg>
-      );
+  const IconComponent = icons[name];
 
-    case "scan":
-      return (
-        <svg {...common}>
-          <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" />
-          <path d="M4 12h16M12 4v16" />
-        </svg>
-      );
-
-    case "arrow":
-      return (
-        <svg {...common}>
-          <path d="M5 12h14m-7-7 7 7-7 7" />
-        </svg>
-      );
-
-    case "link":
-      return (
-        <svg {...common}>
-          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-        </svg>
-      );
-
-    case "file":
-      return (
-        <svg {...common}>
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
-          <path d="M14 2v6h6M8 13h8M8 17h8" />
-        </svg>
-      );
-
-    case "audio":
-      return (
-        <svg {...common}>
-          <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-          <path d="M19 10v1a7 7 0 0 1-14 0v-1m7 8v4m-4 0h8" />
-        </svg>
-      );
-
-    case "spark":
-      return (
-        <svg {...common}>
-          <path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z" />
-          <path d="m19 14 1.2 2.8L23 18l-2.8 1.2L19 22l-1.2-2.8L15 18l2.8-1.2L19 14Z" />
-        </svg>
-      );
-
-    default:
-      return null;
-  }
+  return (
+    <IconComponent
+      size={size}
+      strokeWidth={1.7}
+      aria-hidden="true"
+    />
+  );
 }
 
 function getRecommendedActions(
@@ -101,9 +68,12 @@ function getRecommendedActions(
   isHindi: boolean,
 ): string[] {
   const normalizedLevel = level.toLowerCase();
-  const isHigh = normalizedLevel.includes("high") || score >= 70;
+
+  const isHigh =
+    normalizedLevel.includes("high") || score >= 70;
+
   const isMedium =
-    normalizedLevel.includes("medium") || score >= 35;
+    normalizedLevel.includes("medium") || score >= 30;
 
   const actions: string[] = [];
 
@@ -301,6 +271,8 @@ function App() {
         <div className="ambient-noise" />
       </div>
 
+      {/* HEADER */}
+
       <header className="topbar">
         <a className="brand" href="#home" aria-label="SAFETRACE home">
           <span className="brand-icon">
@@ -342,7 +314,15 @@ function App() {
       </header>
 
       <main className="main-content">
-        <section className="hero-section">
+
+        {/* HERO SECTION */}
+
+        <motion.section
+          className="hero-section"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
           <div className="hero-copy">
             <div className="hero-eyebrow">
               <span className="eyebrow-line" />
@@ -424,7 +404,9 @@ function App() {
               MULTI-SIGNAL ANALYSIS
             </div>
           </div>
-        </section>
+        </motion.section>
+
+        {/* CAPABILITIES */}
 
         <section className="capability-strip" id="intelligence">
           <div className="capability-item">
@@ -470,7 +452,14 @@ function App() {
 
         {/* THREAT ANALYZER */}
 
-        <section className="analyzer-section" id="analyzer">
+        <motion.section
+          className="analyzer-section"
+          id="analyzer"
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="section-heading">
             <div>
               <span className="section-kicker">01 / THREAT ANALYZER</span>
@@ -592,7 +581,7 @@ function App() {
               </span>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ANALYSIS PROGRESS */}
 

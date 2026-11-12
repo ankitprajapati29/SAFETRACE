@@ -14,34 +14,29 @@ export interface UrlAnalysis {
 }
 
 const SUSPICIOUS_TERMS = [
-  "login",
-  "verify",
-  "verification",
-  "claim",
-  "reward",
-  "prize",
-  "bonus",
-  "free",
-  "payment",
-  "wallet",
-  "kyc",
-  "bank",
-  "gift",
-  "winner",
-  "cash",
-  "offer",
-  "referral",
+  "login", "verify", "verification", "claim", "reward",
+  "prize", "bonus", "free", "payment", "wallet", "kyc",
+  "bank", "gift", "winner", "cash", "offer", "referral",
   "invite",
 ];
 
 const REDIRECT_PARAMETERS = [
-  "redirect",
-  "redirect_url",
-  "return_url",
-  "next",
-  "continue",
-  "url",
+  "redirect", "redirect_url", "return_url",
+  "next", "continue", "url",
 ];
+
+function extractUrls(text: string): string[] {
+  const matches =
+    text.match(
+      /(?:https?:\/\/|www\.)[^\s<>"']+|(?:[a-zA-Z0-9-]+\.)+(?:com|in|net|org|buzz|xyz|top|click|work|rest|fit|gq|tk|ml|cf|shop|site|online|info)(?:\/[^\s<>"']*)?/gi,
+    ) ?? [];
+
+  return Array.from(
+    new Set(
+      matches.map((url) => url.replace(/[),.!?;:]+$/, "")),
+    ),
+  );
+}
 
 function isIpAddress(hostname: string): boolean {
   const parts = hostname.split(".");
@@ -64,21 +59,6 @@ function isTrustedHost(hostname: string): boolean {
   );
 }
 
-function extractUrls(text: string): string[] {
-  const matches =
-    text.match(
-      /(?:https?:\/\/|www\.)[^\s<>"']+|(?:[a-zA-Z0-9-]+\.)+(?:com|in|net|org|buzz|xyz|top|click|work|rest|fit|gq|tk|ml|cf|shop|site|online|info)(?:\/[^\s<>"']*)?/gi,
-    ) ?? [];
-
-  return Array.from(
-    new Set(
-      matches.map((url) =>
-        url.replace(/[),.!?;:]+$/, ""),
-      ),
-    ),
-  );
-}
-
 export function analyzeUrls(text: string): UrlAnalysis {
   const urls = extractUrls(text);
 
@@ -98,9 +78,7 @@ export function analyzeUrls(text: string): UrlAnalysis {
     } catch {
       suspiciousUrls.push(rawUrl);
       reasonsEn.push("A URL could not be parsed reliably.");
-      reasonsHi.push(
-        "Ek URL ko reliably verify nahi kiya ja saka.",
-      );
+      reasonsHi.push("Ek URL ko reliably verify nahi kiya ja saka.");
       continue;
     }
 
@@ -116,7 +94,7 @@ export function analyzeUrls(text: string): UrlAnalysis {
       flagsHi.push(hi);
     };
 
-    // 1. Shortener detection
+    // 1. Link shortener
     if (SHORTENER_DOMAINS.has(hostname)) {
       addFlag(
         "The URL uses a link-shortening service that hides its destination.",
@@ -124,7 +102,7 @@ export function analyzeUrls(text: string): UrlAnalysis {
       );
     }
 
-    // 2. Suspicious TLD detection
+    // 2. Suspicious TLD
     if (SUSPICIOUS_TLDS.has(tld)) {
       addFlag(
         `The domain uses the .${tld} extension and requires additional scrutiny.`,
@@ -132,9 +110,9 @@ export function analyzeUrls(text: string): UrlAnalysis {
       );
     }
 
-    // 3. Brand impersonation detection
+    // 3. Brand impersonation
     const containsBrand = PROTECTED_BRANDS.some((brand) =>
-      labels.some((label) => label.includes(brand)),
+      labels.some((label) => label.includes(brand.toLowerCase())),
     );
 
     if (containsBrand && !isTrustedHost(hostname)) {
@@ -144,7 +122,7 @@ export function analyzeUrls(text: string): UrlAnalysis {
       );
     }
 
-    // 4. IP address detection
+    // 4. IP address
     if (isIpAddress(hostname)) {
       addFlag(
         "The URL uses an IP address instead of a normal domain.",
@@ -160,7 +138,7 @@ export function analyzeUrls(text: string): UrlAnalysis {
       );
     }
 
-    // 6. Punycode detection
+    // 6. Punycode
     if (hostname.includes("xn--")) {
       addFlag(
         "The domain contains Punycode characters that may disguise its identity.",
@@ -168,7 +146,7 @@ export function analyzeUrls(text: string): UrlAnalysis {
       );
     }
 
-    // 7. HTTP protocol check
+    // 7. HTTP protocol
     if (parsedUrl.protocol === "http:") {
       addFlag(
         "The URL does not use HTTPS encryption.",
@@ -176,7 +154,7 @@ export function analyzeUrls(text: string): UrlAnalysis {
       );
     }
 
-    // 8. Deep subdomain detection
+    // 8. Deep subdomains
     if (labels.length >= 4) {
       addFlag(
         "The URL contains an unusually deep subdomain structure.",
@@ -184,7 +162,7 @@ export function analyzeUrls(text: string): UrlAnalysis {
       );
     }
 
-    // 9. Random-looking domain detection
+    // 9. Random-looking domain
     const mainDomain =
       labels.length >= 2 ? labels[labels.length - 2] : hostname;
 
@@ -207,10 +185,9 @@ export function analyzeUrls(text: string): UrlAnalysis {
       `${parsedUrl.pathname} ${parsedUrl.search}`.toLowerCase();
 
     const matchedTerms = SUSPICIOUS_TERMS.filter((term) =>
-      new RegExp(
-        `(^|[^a-z0-9])${term}([^a-z0-9]|$)`,
-        "i",
-      ).test(pathAndQuery),
+      new RegExp(`(^|[^a-z0-9])${term}([^a-z0-9]|$)`, "i").test(
+        pathAndQuery,
+      ),
     );
 
     if (matchedTerms.length > 0) {
@@ -220,15 +197,13 @@ export function analyzeUrls(text: string): UrlAnalysis {
       );
     }
 
-    // 11. Redirect parameter detection
-    const queryKeys = [
-      ...parsedUrl.searchParams.keys(),
-    ].map((key) => key.toLowerCase());
+    // 11. Redirect parameters
+    const queryKeys = Array.from(parsedUrl.searchParams.keys()).map(
+      (key) => key.toLowerCase(),
+    );
 
     if (
-      REDIRECT_PARAMETERS.some((key) =>
-        queryKeys.includes(key),
-      )
+      REDIRECT_PARAMETERS.some((key) => queryKeys.includes(key))
     ) {
       addFlag(
         "The URL contains parameters that may redirect users elsewhere.",
@@ -236,7 +211,7 @@ export function analyzeUrls(text: string): UrlAnalysis {
       );
     }
 
-    // 12. Encoded character detection
+    // 12. Encoded characters
     if (/%[0-9a-f]{2}/i.test(rawUrl)) {
       addFlag(
         "The URL contains encoded characters that require inspection.",

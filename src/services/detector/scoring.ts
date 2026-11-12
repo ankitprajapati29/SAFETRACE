@@ -16,26 +16,39 @@ export function calculateRiskScore(
     ? Math.min(100, Math.max(0, urlRisk))
     : 0;
 
-  // Combine message and URL risk independently.
+  // Combined risk score: URL receives higher weight
   const combinedScore = Math.round(
-    safeTextScore * 0.5 + safeUrlRisk * 0.5,
+    safeTextScore * 0.2 + safeUrlRisk * 0.8,
   );
 
-  // Strong URL evidence must not be hidden by a low message score.
-  const score =
-    safeUrlRisk >= 60
-      ? Math.max(60, combinedScore)
-      : combinedScore;
+  let score = combinedScore;
+
+  // Strong URL evidence
+  if (safeUrlRisk >= 75) {
+    score = Math.max(score, 70);
+  }
+
+  // Strong message + URL evidence
+  if (safeUrlRisk >= 60 && safeTextScore >= 60) {
+    score = Math.max(score, 70);
+  }
+
+  // Very high message risk
+  if (safeTextScore >= 85) {
+    score = Math.max(score, 70);
+  }
+
+  score = Math.min(100, Math.max(0, score));
 
   const level =
-    score >= 60
+    score >= 70
       ? "HIGH RISK"
       : score >= 30
         ? "CAUTION"
         : "LOW RISK";
 
   return {
-    score: Math.min(100, score),
+    score,
     level,
   };
 }

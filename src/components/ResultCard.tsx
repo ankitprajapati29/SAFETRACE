@@ -1,3 +1,22 @@
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Activity,
+  AlertCircle,
+  AlertTriangle,
+  AudioLines,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  CircleStop,
+  FileSearch,
+  Fingerprint,
+  Link2,
+  ListChecks,
+  LockKeyhole,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldQuestion,
+} from "lucide-react";
 
 import { analyzeMessage } from "../services/detector/ruleEngine";
 
@@ -12,6 +31,15 @@ type ResultCardProps = {
   aiAnalysis: string;
   onSpeak: () => void;
   onStop: () => void;
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" as const },
+  },
 };
 
 function ResultCard({
@@ -34,6 +62,8 @@ function ResultCard({
 
   const reasons = isHindi ? result.reasonsHi : result.reasonsEn;
   const suspiciousCount = result.suspiciousUrls.length;
+
+  const score = Math.min(100, Math.max(0, safeScore));
 
   const statusTitle = isHindi
     ? isHigh
@@ -59,14 +89,29 @@ function ResultCard({
         ? "Some warning signals were detected. Verify the sender and claims before proceeding."
         : "No major configured warning patterns were detected in this scan.";
 
+  const verdictIcon = isHigh
+    ? ShieldAlert
+    : isMedium
+      ? ShieldQuestion
+      : ShieldCheck;
+
+  const VerdictIcon = verdictIcon;
+
   return (
-    <section
+    <motion.section
       className={`result-section result-redesign risk-${riskTone}`}
       aria-live="polite"
+      initial="hidden"
+      animate="visible"
+      variants={sectionVariants}
     >
+      {/* HEADER */}
+
       <header className="result-header result-redesign-header">
         <div>
-          <span className="section-kicker">02 / ANALYSIS REPORT</span>
+          <span className="section-kicker">
+            02 / ANALYSIS REPORT
+          </span>
 
           <h2>
             {isHindi
@@ -89,16 +134,22 @@ function ResultCard({
 
       {/* OVERALL RESULT */}
 
-      <section
+      <motion.section
         className={`result-verdict verdict-${riskTone}`}
         aria-label="Overall risk result"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.45, delay: 0.1 }}
       >
         <div className="verdict-copy">
           <span className="result-label">
             {isHindi ? "कुल जोखिम स्तर" : "OVERALL RESULT"}
           </span>
 
-          <h3>{statusTitle}</h3>
+          <h3>
+            <VerdictIcon size={23} strokeWidth={1.8} />
+            {statusTitle}
+          </h3>
 
           <p>{statusDescription}</p>
         </div>
@@ -106,11 +157,21 @@ function ResultCard({
         <div
           className="verdict-score"
           role="img"
-          aria-label={`Risk score ${safeScore} out of 100`}
+          aria-label={`Risk score ${score} out of 100`}
         >
-          <strong>{safeScore}</strong>
+          <motion.strong
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            {score}
+          </motion.strong>
+
           <span>/ 100</span>
-          <small>{isHindi ? "जोखिम स्कोर" : "RISK SCORE"}</small>
+
+          <small>
+            {isHindi ? "जोखिम स्कोर" : "RISK SCORE"}
+          </small>
         </div>
 
         <div
@@ -119,21 +180,36 @@ function ResultCard({
           aria-label="Risk score"
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-valuenow={safeScore}
+          aria-valuenow={score}
         >
-          <span style={{ width: `${safeScore}%` }} />
+          <motion.span
+            initial={{ width: 0 }}
+            animate={{ width: `${score}%` }}
+            transition={{
+              duration: 1,
+              delay: 0.25,
+              ease: "easeOut",
+            }}
+          />
         </div>
-      </section>
+      </motion.section>
 
       {/* DETECTION EVIDENCE */}
 
-      <section className="result-section-block">
+      <motion.section
+        className="result-section-block"
+        variants={sectionVariants}
+      >
         <div className="result-block-heading">
           <span className="result-step">01</span>
 
           <div>
-            <span className="section-kicker">DETECTION EVIDENCE</span>
+            <span className="section-kicker">
+              DETECTION EVIDENCE
+            </span>
+
             <h3>
+              <FileSearch size={19} />
               {isHindi
                 ? "यह परिणाम क्यों मिला?"
                 : "Why this result?"}
@@ -141,46 +217,70 @@ function ResultCard({
           </div>
         </div>
 
-        {reasons.length > 0 ? (
-          <ul className="result-evidence-list">
-            {reasons.map((reason, index) => (
-              <li key={`${index}-${reason}`}>
-                <span className="evidence-check">!</span>
-                <span>{reason}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="result-empty-state">
-            <span className="empty-state-icon">✓</span>
+        <AnimatePresence mode="wait">
+          {reasons.length > 0 ? (
+            <motion.ul
+              key="evidence"
+              className="result-evidence-list"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              {reasons.map((reason, index) => (
+                <motion.li
+                  key={`${index}-${reason}`}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.06 }}
+                >
+                  <span className="evidence-check">
+                    <AlertTriangle size={15} />
+                  </span>
 
-            <div>
-              <strong>
-                {isHindi
-                  ? "कोई कॉन्फ़िगर किया गया संदिग्ध पैटर्न नहीं मिला"
-                  : "No configured suspicious patterns found"}
-              </strong>
+                  <span>{reason}</span>
+                </motion.li>
+              ))}
+            </motion.ul>
+          ) : (
+            <motion.div
+              key="empty"
+              className="result-empty-state"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <span className="empty-state-icon">
+                <CheckCircle2 size={22} />
+              </span>
 
-              <p>
-                {isHindi
-                  ? "इसका अर्थ यह नहीं कि मैसेज पूरी तरह सुरक्षित है।"
-                  : "This does not prove the message is completely safe."}
-              </p>
-            </div>
-          </div>
-        )}
-      </section>
+              <div>
+                <strong>
+                  {isHindi
+                    ? "कोई कॉन्फ़िगर किया गया संदिग्ध पैटर्न नहीं मिला"
+                    : "No configured suspicious patterns found"}
+                </strong>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.section>
 
       {/* URL INTELLIGENCE */}
 
       {result.detectedUrls.length > 0 && (
-        <section className="result-section-block result-url-block">
+        <motion.section
+          className="result-section-block result-url-block"
+          variants={sectionVariants}
+        >
           <div className="result-block-heading">
             <span className="result-step">02</span>
 
             <div>
-              <span className="section-kicker">URL INTELLIGENCE</span>
+              <span className="section-kicker">
+                URL INTELLIGENCE
+              </span>
+
               <h3>
+                <Link2 size={19} />
                 {isHindi
                   ? "मैसेज में मिले लिंक"
                   : "Links found in this message"}
@@ -189,12 +289,17 @@ function ResultCard({
           </div>
 
           <ul className="result-url-list">
-            {result.detectedUrls.map((url) => {
+            {result.detectedUrls.map((url, index) => {
               const flagged = result.suspiciousUrls.includes(url);
 
               return (
-                <li key={url}>
-                  <code>{url}</code>
+                <motion.li
+                  key={url}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.07 }}
+                >
+                  <code title={url}>{url}</code>
 
                   <span
                     className={
@@ -203,39 +308,51 @@ function ResultCard({
                         : "url-pill url-pill-neutral"
                     }
                   >
-                    {flagged
-                      ? isHindi
-                        ? "संदिग्ध"
-                        : "FLAGGED"
-                      : isHindi
-                        ? "जाँचा गया"
-                        : "DETECTED"}
+                    {flagged ? (
+                      <>
+                        <AlertCircle size={13} />
+                        {isHindi ? "संदिग्ध" : "FLAGGED"}
+                      </>
+                    ) : (
+                      <>
+                        <Check size={13} />
+                        {isHindi ? "जाँचा गया" : "DETECTED"}
+                      </>
+                    )}
                   </span>
-                </li>
+                </motion.li>
               );
             })}
           </ul>
 
           {suspiciousCount > 0 && (
             <p className="result-inline-warning">
+              <AlertTriangle size={16} />
               {isHindi
                 ? `${suspiciousCount} लिंक पर चेतावनी संकेत मिले। इन्हें न खोलें।`
                 : `${suspiciousCount} link(s) have warning signals. Avoid opening them.`}
             </p>
           )}
-        </section>
+        </motion.section>
       )}
 
       {/* BACKEND ANALYSIS */}
 
       {aiAnalysis.trim() && (
-        <section className="result-ai-block">
+        <motion.section
+          className="result-ai-block"
+          variants={sectionVariants}
+        >
           <div className="result-block-heading">
             <span className="result-step">03</span>
 
             <div>
-              <span className="section-kicker">BACKEND ANALYSIS</span>
+              <span className="section-kicker">
+                BACKEND ANALYSIS
+              </span>
+
               <h3>
+                <Activity size={19} />
                 {isHindi
                   ? "अतिरिक्त विश्लेषण"
                   : "Additional analysis"}
@@ -244,20 +361,31 @@ function ResultCard({
           </div>
 
           <p>{aiAnalysis}</p>
-        </section>
+        </motion.section>
       )}
 
       {/* RECOMMENDED ACTIONS */}
 
-      <section className="result-section-block result-actions-block">
+      <motion.section
+        className="result-section-block result-actions-block"
+        variants={sectionVariants}
+      >
         <div className="result-block-heading">
           <span className="result-step">
-            {result.detectedUrls.length > 0 ? "04" : "03"}
+            {aiAnalysis.trim()
+              ? "04"
+              : result.detectedUrls.length > 0
+                ? "03"
+                : "02"}
           </span>
 
           <div>
-            <span className="section-kicker">RECOMMENDED ACTIONS</span>
+            <span className="section-kicker">
+              RECOMMENDED ACTIONS
+            </span>
+
             <h3>
+              <ListChecks size={19} />
               {isHindi
                 ? "अब आपको क्या करना चाहिए?"
                 : "What should you do next?"}
@@ -267,21 +395,28 @@ function ResultCard({
 
         <ol className="result-recommendations">
           {recommendations.map((action, index) => (
-            <li key={`${index}-${action}`}>
+            <motion.li
+              key={`${index}-${action}`}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.06 }}
+            >
               <span>{String(index + 1).padStart(2, "0")}</span>
               <p>{action}</p>
-            </li>
+            </motion.li>
           ))}
         </ol>
-      </section>
+      </motion.section>
 
       {/* TECHNICAL DETAILS */}
 
       <details className="result-technical-details">
         <summary>
+          <Fingerprint size={17} />
           {isHindi
             ? "तकनीकी विवरण देखें"
             : "View analysis details"}
+          <ChevronDown size={16} />
         </summary>
 
         <div className="technical-detail-grid">
@@ -310,6 +445,7 @@ function ResultCard({
       {/* DISCLAIMER */}
 
       <p className="result-disclaimer">
+        <LockKeyhole size={14} />
         {isHindi
           ? "यह स्कोर नियम-आधारित जाँच से बनाया गया है। यह सुरक्षा की गारंटी नहीं है। कम स्कोर का अर्थ यह नहीं कि मैसेज पूरी तरह सुरक्षित है।"
           : "This assessment uses rule-based detection. It is not a guarantee of security. A low score does not mean the message is completely safe."}
@@ -323,7 +459,7 @@ function ResultCard({
           type="button"
           onClick={onSpeak}
         >
-          <span aria-hidden="true">♫</span>
+          <AudioLines size={17} />
           {isHindi ? "रिपोर्ट सुनें" : "Listen to report"}
         </button>
 
@@ -332,10 +468,11 @@ function ResultCard({
           type="button"
           onClick={onStop}
         >
+          <CircleStop size={17} />
           {isHindi ? "ऑडियो रोकें" : "Stop audio"}
         </button>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

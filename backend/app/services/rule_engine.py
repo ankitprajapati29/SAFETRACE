@@ -2,8 +2,8 @@
 import re
 from typing import Any
 
+from app.services.url_analyzer import analyze_url
 
-# SAFETRACE - Rule-Based Fraud Detection Engine
 
 SCAM_RULES = [
     {
@@ -30,7 +30,7 @@ SCAM_RULES = [
     {
         "category": "Suspicious Payment Request",
         "patterns": [
-            r"\b(pay|transfer|send)\b.{0,40}\b(money|amount|rupees|rs\.?|inr)\b",
+            r"\b(pay|transfer|send)\b.{0,40}\b(money|amount|rupees|inr)\b",
             r"\b(scan|send)\b.{0,30}\b(qr code|qr)\b",
             r"\b(upi id|payment link|bank transfer)\b",
             r"\b(refund fee|processing fee|advance payment)\b",
@@ -47,15 +47,6 @@ SCAM_RULES = [
         ],
         "weight": 25,
         "description": "Message may be using fake prizes or rewards to attract victims.",
-    },
-    {
-        "category": "Suspicious Link",
-        "patterns": [
-            r"https?://[^\s]+",
-            r"\b(bit\.ly|tinyurl\.com|t\.co|cutt\.ly|rb\.gy)/\S+",
-        ],
-        "weight": 20,
-        "description": "Message contains a link that should be verified before opening.",
     },
     {
         "category": "Identity Impersonation",
@@ -91,10 +82,28 @@ SCAM_RULES = [
 ]
 
 
+URL_PATTERN = re.compile(
+    r"https?://[^\s<>'\"]+|www\.[^\s<>'\"]+|"
+    r"(?:[a-zA-Z0-9-]+\.)+"
+    r"(?:com|in|net|org|buzz|xyz|top|click|work|shop|online|info)"
+    r"(?:/[^\s<>'\"]*)?",
+    re.IGNORECASE,
+)
+
+
+def extract_urls(message: str) -> list[str]:
+    matches = URL_PATTERN.findall(message)
+
+    return list(dict.fromkeys(
+        url.rstrip("),.!?;:")
+        for url in matches
+    ))
+
+
 def analyze_message(message: str) -> dict[str, Any]:
     """
-    Analyze text for common fraud and scam indicators.
-    Returns a risk score, detected threats, and recommendations.
+    Unified rule-based message and URL analysis.
+    URL analysis is static; live reputation is not verified.
     """
 
     if not isinstance(message, str) or not message.strip():
@@ -110,8 +119,9 @@ def analyze_message(message: str) -> dict[str, Any]:
     text = message.lower().strip()
 
     detected_threats = []
-    total_weight = 0
+    total_text_weight = 0
 
+    # 1. Message text analysis
     for rule in SCAM_RULES:
         matched = any(
             re.search(pattern, text, re.IGNORECASE)
@@ -124,24 +134,76 @@ def analyze_message(message: str) -> dict[str, Any]:
                 "description": rule["description"],
                 "weight": rule["weight"],
             })
-            total_weight += rule["weight"]
 
-    # Multiple independent indicators increase the risk score.
-    risk_score = min(total_weight, 100)
+            total_text_weight += rule["weight"]
 
-    if risk_score >= 60:
+    text_score = min(total_text_weight, 100)
+
+    # 2. URL extraction and investigation
+    urls = extract_urls(message)
+    url_results = []
+
+    for url in urls:
+        result = analyze_url(url)
+
+        if result.get("success"):
+            url_results.append(result)
+
+            for threat in result.get("detected_threats", []):
+                detected_threats.append({
+                    "category": "URL Threat Intelligence",
+                    "description": threat,
+                    "weight": 0,
+                })
+
+    # 3. Calculate URL risk using the same indicator logic
+    url_indicator_count = sum(
+        len(result.get("checks", []))
+        for result in url_results
+    )
+
+    if url_indicator_count > 0:
+        url_risk = min(
+            100,
+            45 + max(0, url_indicator_count - 1) * 15
+        )
+    elif urls:
+        url_risk = 10
+    else:
+        url_risk = 0
+
+    # 4. Unified risk score
+    risk_score = round(
+        text_score * 0.20 + url_risk * 0.80
+    )
+
+    # Strong URL or message evidence
+    if url_risk >= 75:
+        risk_score = max(risk_score, 70)
+
+    if url_risk >= 60 and text_score >= 60:
+        risk_score = max(risk_score, 70)
+
+    if text_score >= 85:
+        risk_score = max(risk_score, 70)
+
+    risk_score = min(100, risk_score)
+
+    # 5. Risk classification
+    if risk_score >= 70:
         risk_level = "HIGH"
-    elif risk_score >= 25:
+    elif risk_score >= 30:
         risk_level = "MEDIUM"
     else:
         risk_level = "LOW"
 
+    # 6. Recommendations
     recommendations = []
 
     if risk_level == "HIGH":
         recommendations.extend([
-            "Do not click suspicious links.",
-            "Never share OTP, PIN, passwords, or banking details.",
+            "Avoid opening suspicious links.",
+            "Never share OTPs, PINs, passwords, or banking details.",
             "Do not transfer money without independent verification.",
             "Verify the sender through an official communication channel.",
         ])
@@ -149,13 +211,19 @@ def analyze_message(message: str) -> dict[str, Any]:
         recommendations.extend([
             "Verify the sender's identity before taking action.",
             "Avoid sharing personal or financial information.",
-            "Check links independently before opening them.",
+            "Check suspicious links independently.",
         ])
     else:
         recommendations.extend([
-            "No strong fraud indicators were detected by these rules.",
-            "Still verify unexpected requests before taking action.",
+            "No strong configured fraud indicators were detected.",
+            "A low risk score does not guarantee that a message or URL is safe.",
         ])
+
+    # Include URL-specific recommendations
+    for result in url_results:
+        recommendations.extend(result.get("recommendations", []))
+
+    recommendations = list(dict.fromkeys(recommendations))
 
     return {
         "success": True,
@@ -163,6 +231,14 @@ def analyze_message(message: str) -> dict[str, Any]:
         "risk_level": risk_level,
         "detected_threats": detected_threats,
         "recommendations": recommendations,
+        "detected_urls": urls,
+        "suspicious_urls": [
+            result["url"]
+            for result in url_results
+            if result.get("detected_threats")
+        ],
+        "url_analysis": url_results,
+        "analysis_type": "Unified Static Message and URL Analysis",
         "message": (
             "Potential fraud indicators detected."
             if detected_threats
@@ -171,6 +247,6 @@ def analyze_message(message: str) -> dict[str, Any]:
     }
 
 
-# Backward-compatible function alias.
+# Backward-compatible function alias
 def analyze_text(message: str) -> dict[str, Any]:
     return analyze_message(message)
